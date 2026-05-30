@@ -10,9 +10,8 @@ const investment = (type: string): PlAccountRef => ({
 });
 
 describe('bucketOfPlAccount', () => {
-  // Guards the category-only decision: investments bucket as `taxable` regardless of
-  // type, never split into taxFree/taxDeferred/crypto. See README "ProjectionLab API
-  // limitation". A test that just mirrored the 4-entry lookup table would be noise.
+  // Category-only: investments bucket as `taxable` regardless of type, never split into
+  // taxFree/taxDeferred/crypto (README "ProjectionLab API limitation").
   it('buckets every investment as taxable, ignoring the account type', () => {
     expect(bucketOfPlAccount(investment('stock-isa'))).toBe('taxable');
     expect(bucketOfPlAccount(investment('uk-pension'))).toBe('taxable');

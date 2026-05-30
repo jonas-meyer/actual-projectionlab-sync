@@ -51,7 +51,3 @@ pnpm build      # package for the stores (build:firefox for the Firefox MV3 buil
 
 Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by Actual
 Budget or ProjectionLab; both names are the property of their respective owners.
-
-## License
-
-[MIT](./LICENSE)

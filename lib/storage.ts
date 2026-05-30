@@ -1,4 +1,3 @@
-// Settings and account-mapping persistence in extension-local storage.
 import type { Mapping, Settings } from './types';
 
 const SETTINGS_KEY = 'settings';

@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish zips
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ./.github/actions/setup
+      - name: Verify tag matches package.json version
+        run: |
+          pkg="v$(node -p "require('./package.json').version")"
+          [ "$pkg" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME != package.json $pkg" >&2; exit 1; }
+      - run: pnpm zip
+      - run: pnpm zip:firefox
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" .output/*.zip --generate-notes

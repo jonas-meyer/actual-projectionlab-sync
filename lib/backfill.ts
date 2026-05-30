@@ -1,4 +1,3 @@
-// Historical net-worth backfill helpers.
 import type { ActualAccount, Bucket, MonthlyDelta, PlProgressPoint } from './types';
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;

@@ -77,7 +77,6 @@ async function pushCurrentBalances(
   return updated;
 }
 
-// Sync Now: push current Actual balances into the mapped ProjectionLab accounts.
 async function runSync(): Promise<SyncResult> {
   const gate = requireSettings(await getSettings());
   if (!gate.ok) return gate;
@@ -123,7 +122,6 @@ async function reconcileMapping(
   return parts.join(', ');
 }
 
-// Account lists for the mapper UI: Actual accounts + ProjectionLab accounts.
 async function runGetMapperData(): Promise<MapperData> {
   const gate = requireSettings(await getSettings());
   if (!gate.ok) return gate;
