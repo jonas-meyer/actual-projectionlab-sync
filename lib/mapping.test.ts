@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoLinkByName, reconcile } from './mapping';
+import { autoLinkByName, reconcile, sumBalancesByPlAccount } from './mapping';
 import type { ActualAccount, PlAccountRef } from './types';
 
 const actual = (id: string, name = id): ActualAccount => ({
@@ -66,5 +66,41 @@ describe('autoLinkByName', () => {
 
   it('returns no links when nothing matches', () => {
     expect(autoLinkByName([actual('a1', 'Cash')], [pl('p1', 'Stock ISA')])).toEqual({});
+  });
+});
+
+describe('sumBalancesByPlAccount', () => {
+  it('sums several Actual accounts mapped to the same PL account', () => {
+    const balances = new Map([
+      ['a1', 100],
+      ['a2', 50],
+      ['a3', 25],
+    ]);
+    expect(sumBalancesByPlAccount({ a1: 'p1', a2: 'p1', a3: 'p2' }, balances)).toEqual(
+      new Map([
+        ['p1', 150],
+        ['p2', 25],
+      ]),
+    );
+  });
+
+  it('nets a negative balance (paid-in-full card mapped to cash) against the others', () => {
+    const balances = new Map([
+      ['cash', 1000],
+      ['card', -250],
+    ]);
+    expect(sumBalancesByPlAccount({ cash: 'p1', card: 'p1' }, balances)).toEqual(
+      new Map([['p1', 750]]),
+    );
+  });
+
+  it('skips a mapped Actual account with no known balance', () => {
+    expect(sumBalancesByPlAccount({ a1: 'p1', a2: 'p1' }, new Map([['a1', 100]]))).toEqual(
+      new Map([['p1', 100]]),
+    );
+  });
+
+  it('returns an empty map when nothing is mapped', () => {
+    expect(sumBalancesByPlAccount({}, new Map([['a1', 100]]))).toEqual(new Map());
   });
 });

@@ -3,13 +3,13 @@
 import { getAccountBalances, getMonthlyDeltas, listAccounts } from '@/lib/actualClient';
 import { buildBackfill, ymd } from '@/lib/backfill';
 import { bucketOfPlAccount } from '@/lib/buckets';
-import { autoLinkByName, reconcile } from '@/lib/mapping';
+import { autoLinkByName, reconcile, sumBalancesByPlAccount } from '@/lib/mapping';
+import { onMessage } from '@/lib/messaging';
 import { exportData, listPlAccounts, restoreProgress, updateAccount } from '@/lib/plClient';
 import { getMapping, getSettings, saveMapping } from '@/lib/storage';
 import type {
   ActualAccount,
   Bucket,
-  ExtensionMessage,
   MapperData,
   Mapping,
   PlAccountRef,
@@ -18,16 +18,10 @@ import type {
 } from '@/lib/types';
 
 export default defineBackground(() => {
-  const handlers = {
-    SYNC_NOW: runSync,
-    BACKFILL_PREVIEW: runBackfillPreview,
-    BACKFILL_APPLY: runBackfillApply,
-    GET_MAPPER_DATA: runGetMapperData,
-  } satisfies Record<ExtensionMessage['type'], () => Promise<SyncResult | MapperData>>;
-  browser.runtime.onMessage.addListener((message: unknown) => {
-    const msg = message as ExtensionMessage | undefined;
-    return msg ? handlers[msg.type]?.() : undefined;
-  });
+  onMessage('syncNow', runSync);
+  onMessage('backfillPreview', runBackfillPreview);
+  onMessage('backfillApply', runBackfillApply);
+  onMessage('getMapperData', runGetMapperData);
 });
 
 // Validate the saved settings once and narrow Partial<Settings> to a complete Settings.
@@ -61,14 +55,8 @@ async function pushCurrentBalances(
   currentByActualId: Map<string, number>,
   plById: Map<string, PlAccountRef>,
 ): Promise<number> {
-  const sumByPl = new Map<string, number>();
-  for (const [actualId, plId] of Object.entries(mapping)) {
-    const balance = currentByActualId.get(actualId);
-    if (balance === undefined) continue;
-    sumByPl.set(plId, (sumByPl.get(plId) ?? 0) + balance);
-  }
   let updated = 0;
-  for (const [plId, sum] of sumByPl) {
+  for (const [plId, sum] of sumBalancesByPlAccount(mapping, currentByActualId)) {
     const account = plById.get(plId);
     if (!account) continue; // mapped to a PL account that no longer exists
     await updateAccount(account, Math.round(sum * 100) / 100, plKey);

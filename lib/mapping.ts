@@ -70,3 +70,19 @@ export function autoLinkByName(
   }
   return links;
 }
+
+// Sum each Actual account's balance into the PL account it maps to; several Actual
+// accounts can map to one PL account (e.g. all current accounts into cash, or a
+// paid-in-full card netted against it). Actual accounts with no known balance are skipped.
+export function sumBalancesByPlAccount(
+  mapping: Mapping,
+  currentByActualId: Map<string, number>,
+): Map<string, number> {
+  const sumByPl = new Map<string, number>();
+  for (const [actualId, plId] of Object.entries(mapping)) {
+    const balance = currentByActualId.get(actualId);
+    if (balance === undefined) continue;
+    sumByPl.set(plId, (sumByPl.get(plId) ?? 0) + balance);
+  }
+  return sumByPl;
+}

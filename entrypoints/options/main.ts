@@ -1,5 +1,6 @@
 // Options page: persists settings, and maps each Actual account to a ProjectionLab
 // account (the mapping is reused by Backfill's bucketing and the forward sync).
+import { sendMessage } from '@/lib/messaging';
 import { ensureBridgePermission } from '@/lib/permissions';
 import { getMapping, getSettings, saveMapping, saveSettings } from '@/lib/storage';
 import type { MapperData, PlAccountRef, Settings } from '@/lib/types';
@@ -44,17 +45,15 @@ const mapTable = document.querySelector<HTMLTableElement>('#map-table')!;
 
 document.querySelector<HTMLButtonElement>('#load-accounts')!.addEventListener('click', async () => {
   mapStatus.textContent = 'Loading accounts...';
-  let data: MapperData | undefined;
+  let data: MapperData;
   try {
-    data = (await browser.runtime.sendMessage({ type: 'GET_MAPPER_DATA' })) as
-      | MapperData
-      | undefined;
+    data = await sendMessage('getMapperData');
   } catch {
     mapStatus.textContent = 'No response from the extension. Reload it and retry.';
     return;
   }
-  if (!data?.ok || !data.actualAccounts || !data.plAccounts) {
-    mapStatus.textContent = data?.error ?? 'Failed to load accounts.';
+  if (!data.ok || !data.actualAccounts || !data.plAccounts) {
+    mapStatus.textContent = data.error ?? 'Failed to load accounts.';
     return;
   }
   await renderMapping(data.actualAccounts, data.plAccounts);

@@ -20,9 +20,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
+    "@webext-core/fake-browser": "^1.5.1",
     "@wxt-dev/auto-icons": "^1.1.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7",
     "wxt": "^0.20.26"
+  },
+  "dependencies": {
+    "@webext-core/messaging": "^3.0.1"
   }
 }

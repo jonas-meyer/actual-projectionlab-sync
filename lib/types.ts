@@ -106,25 +106,7 @@ export interface PlExportData {
   progress?: PlProgress;
 }
 
-// Extension messaging (popup to background).
-
-export interface SyncNowMessage {
-  type: 'SYNC_NOW';
-}
-export interface BackfillPreviewMessage {
-  type: 'BACKFILL_PREVIEW';
-}
-export interface BackfillApplyMessage {
-  type: 'BACKFILL_APPLY';
-}
-export interface GetMapperDataMessage {
-  type: 'GET_MAPPER_DATA';
-}
-export type ExtensionMessage =
-  | SyncNowMessage
-  | BackfillPreviewMessage
-  | BackfillApplyMessage
-  | GetMapperDataMessage;
+// Background responses (the @webext-core/messaging protocol lives in lib/messaging.ts).
 
 /** Account lists for the mapper UI: Actual accounts + ProjectionLab accounts. */
 export interface MapperData {

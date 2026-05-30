@@ -1,23 +1,14 @@
+import { storage } from 'wxt/utils/storage';
 import type { Mapping, Settings } from './types';
 
-const SETTINGS_KEY = 'settings';
-const MAPPING_KEY = 'mapping';
+// `local:settings` / `local:mapping` map to the same browser.storage.local keys the
+// hand-rolled wrapper used (`settings` / `mapping`), so existing saved data is preserved.
+// The fallback makes get return {} (not null) until the user fills in the options page.
+const settingsItem = storage.defineItem<Partial<Settings>>('local:settings', { fallback: {} });
+const mappingItem = storage.defineItem<Mapping>('local:mapping', { fallback: {} });
 
-// May be empty or partial until the user fills in the options page.
-export async function getSettings(): Promise<Partial<Settings>> {
-  const got = await browser.storage.local.get(SETTINGS_KEY);
-  return (got[SETTINGS_KEY] as Partial<Settings>) ?? {};
-}
-
-export async function saveSettings(settings: Partial<Settings>): Promise<void> {
-  await browser.storage.local.set({ [SETTINGS_KEY]: settings });
-}
-
-export async function getMapping(): Promise<Mapping> {
-  const got = await browser.storage.local.get(MAPPING_KEY);
-  return (got[MAPPING_KEY] as Mapping) ?? {};
-}
-
-export async function saveMapping(mapping: Mapping): Promise<void> {
-  await browser.storage.local.set({ [MAPPING_KEY]: mapping });
-}
+export const getSettings = (): Promise<Partial<Settings>> => settingsItem.getValue();
+export const saveSettings = (settings: Partial<Settings>): Promise<void> =>
+  settingsItem.setValue(settings);
+export const getMapping = (): Promise<Mapping> => mappingItem.getValue();
+export const saveMapping = (mapping: Mapping): Promise<void> => mappingItem.setValue(mapping);
