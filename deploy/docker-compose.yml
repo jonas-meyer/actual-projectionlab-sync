@@ -1,0 +1,28 @@
+# Local dev: Actual sync server + actual-http-api bridge (fly.*.example.toml for prod).
+#   cp .env.example .env && docker compose up -d
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    ports:
+      - "5006:5006"
+    volumes:
+      - actual-data:/data
+    restart: unless-stopped
+
+  actual-http-api:
+    image: jhonderson/actual-http-api:26.5.2   # pin, never :latest
+    ports:
+      - "5007:5007"
+    environment:
+      ACTUAL_SERVER_URL: "http://actual-server:5006/"
+      NODE_ENV: "production"
+      PORT: "5007"
+      EXPERIMENTAL_OPERATIONS_ENABLED: "true"   # run-query (ActualQL) is experimental; sync depends on it
+      ACTUAL_SERVER_PASSWORD: "${ACTUAL_SERVER_PASSWORD:?set in .env}"
+      API_KEY: "${API_KEY:?set in .env}"
+    depends_on:
+      - actual-server
+    restart: unless-stopped
+
+volumes:
+  actual-data:

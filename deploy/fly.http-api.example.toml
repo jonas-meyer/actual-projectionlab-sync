@@ -1,0 +1,60 @@
+# EXAMPLE: deploy actual-http-api (the bridge) to fly.io.
+#   fly apps create <your-api-app>
+#   fly secrets set ACTUAL_SERVER_PASSWORD=... API_KEY=... -a <your-api-app>
+#   fly deploy -c fly.http-api.example.toml
+
+app = '<your-api-app>'
+primary_region = '<your-region>'      # e.g. lhr, match your Actual server's region
+
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
+
+[build]
+  image = 'jhonderson/actual-http-api:26.5.2'   # pin a version, never :latest
+
+[env]
+  PORT = '5007'
+  NODE_ENV = 'production'
+  EXPERIMENTAL_OPERATIONS_ENABLED = 'true'   # run-query (ActualQL) is an experimental endpoint; sync depends on it
+  ACTUAL_DATA_DIR = '/data'           # ephemeral; budget cache re-downloads on cold start
+  ACTUAL_SERVER_URL = 'https://<your-actual-server>.fly.dev/'
+  SWAGGER_PROTOCOL = 'https'
+  SWAGGER_HOST = '<your-api-app>.fly.dev'
+  SWAGGER_PORT = '443'
+
+[experimental]
+  auto_rollback = true
+
+[[restart]]
+  policy = 'on-failure'
+  retries = 10
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 5007
+  auto_stop_machines = 'stop'         # scale to zero when idle
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[services.ports]]
+    port = 80
+    handlers = ['http']
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ['tls', 'http']
+
+  [services.concurrency]
+    type = 'connections'
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.tcp_checks]]
+    interval = '15s'
+    timeout = '2s'
+    grace_period = '5s'
+
+[[vm]]
+  size = 'shared-cpu-1x'
+  memory = '512mb'                    # headroom: the bridge loads the whole budget

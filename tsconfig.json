@@ -1,0 +1,9 @@
+{
+  // Extends the tsconfig WXT generates on `pnpm install` (strict mode, bundler
+  // resolution, auto-import + `browser` globals).
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}

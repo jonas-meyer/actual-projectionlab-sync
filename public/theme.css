@@ -1,0 +1,99 @@
+/*
+ * Shared popup/options theme, matching Actual Budget's palette
+ * (actualbudget/actual: packages/component-library/src/themes).
+ * Light by default; dark follows the system color-scheme preference.
+ */
+:root {
+  color-scheme: light dark;
+  --pl-bg: #e8ecf0; /* navy100 */
+  --pl-surface: #ffffff;
+  --pl-text: #272630;
+  --pl-subdued: #6b7787;
+  --pl-border: #d9e2ec; /* navy150 */
+  --pl-primary: #8719e0; /* purple500 */
+  --pl-primary-hover: #7a0ecc; /* purple600 */
+  --pl-on-primary: #ffffff;
+  --pl-btn-bg: #ffffff;
+  --pl-btn-text: #102a43; /* navy900 */
+  --pl-btn-hover: #f0f4f6; /* gray80 */
+  --pl-good: #199473; /* green600 */
+  --pl-bad: #cf1124; /* red600 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pl-bg: #080811; /* gray900 */
+    --pl-surface: #243b53; /* navy800 */
+    --pl-text: #d9e2ec; /* navy150 */
+    --pl-subdued: #829ab1; /* navy400 */
+    --pl-border: #486581; /* navy600 */
+    --pl-primary: #9446ed; /* purple400 */
+    --pl-primary-hover: #a368fc; /* purple300 */
+    --pl-btn-bg: #243b53; /* navy800 */
+    --pl-btn-text: #d9e2ec; /* navy150 */
+    --pl-btn-hover: #334e68; /* navy700 */
+    --pl-good: #3ebd93; /* green400 */
+    --pl-bad: #ef4e4e; /* red400 */
+  }
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  color: var(--pl-text);
+  background: var(--pl-bg);
+}
+
+h1,
+h2 {
+  font-weight: 600;
+}
+
+button {
+  font: inherit;
+  padding: 6px 12px;
+  border: 1px solid var(--pl-border);
+  border-radius: 6px;
+  background: var(--pl-btn-bg);
+  color: var(--pl-btn-text);
+  cursor: pointer;
+}
+button:not(:disabled):hover {
+  background: var(--pl-btn-hover);
+}
+button.primary {
+  background: var(--pl-primary);
+  border-color: var(--pl-primary);
+  color: var(--pl-on-primary);
+}
+button.primary:not(:disabled):hover {
+  background: var(--pl-primary-hover);
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input,
+select {
+  font: inherit;
+  padding: 5px 8px;
+  border: 1px solid var(--pl-border);
+  border-radius: 6px;
+  background: var(--pl-surface);
+  color: var(--pl-text);
+}
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--pl-primary);
+}
+
+a {
+  color: var(--pl-primary);
+}
+
+table {
+  border-collapse: collapse;
+  background: var(--pl-surface);
+}

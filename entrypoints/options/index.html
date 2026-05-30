@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Actual → ProjectionLab Settings</title>
+    <link rel="stylesheet" href="/theme.css" />
+    <style>
+      body { max-width: 560px; margin: 24px auto; padding: 0 16px; }
+      label { display: block; margin: 14px 0 4px; font-weight: 600; }
+      input { width: 100%; box-sizing: border-box; }
+      small { color: var(--pl-subdued); font-weight: 400; }
+      button { margin-top: 16px; padding: 8px 16px; }
+      #status { margin-left: 12px; color: var(--pl-good); font-weight: 600; }
+      h2 { margin-top: 28px; }
+      #map-status { margin-left: 8px; color: var(--pl-subdued); font-weight: 400; }
+      #map-table { width: 100%; margin-top: 12px; }
+      #map-table td { padding: 5px 6px; border-bottom: 1px solid var(--pl-border); }
+      #map-table select { width: 100%; }
+    </style>
+  </head>
+  <body>
+    <h1>Settings</h1>
+    <form id="settings">
+      <label>Bridge URL <small>your actual-http-api base URL, e.g. https://your-api.fly.dev</small>
+        <input name="bridgeUrl" type="url" placeholder="https://your-api.fly.dev" required />
+      </label>
+      <label>API key <small>the x-api-key secret you generated for the bridge</small>
+        <input name="apiKey" type="password" required />
+      </label>
+      <label>Budget Sync ID <small>Actual → Settings → Show advanced settings → Sync ID</small>
+        <input name="syncId" type="text" required />
+      </label>
+      <label>Budget encryption password <small>required for end-to-end encrypted budgets; sent as the budget-encryption-password header</small>
+        <input name="encryptionPassword" type="password" />
+      </label>
+      <label>ProjectionLab Plugin API key <small>PL → Account Settings → Plugins</small>
+        <input name="plKey" type="password" required />
+      </label>
+      <button type="submit" class="primary">Save</button>
+      <span id="status"></span>
+    </form>
+
+    <h2>Account mapping</h2>
+    <p>
+      <small>
+        Map each Actual account to a ProjectionLab account. Unmapped accounts use a
+        coarse default; the net-worth total stays exact either way. Requires an open
+        ProjectionLab tab.
+      </small>
+    </p>
+    <button id="load-accounts" type="button">Load accounts</button>
+    <span id="map-status"></span>
+    <table id="map-table"></table>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

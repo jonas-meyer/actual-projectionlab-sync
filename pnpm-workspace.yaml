@@ -1,0 +1,5 @@
+# pnpm 11 gates dependency build scripts here. esbuild needs its postinstall
+# (Vite/WXT use it); spawn-sync is an unused transitive shim, no build needed.
+allowBuilds:
+  esbuild: true
+  spawn-sync: false

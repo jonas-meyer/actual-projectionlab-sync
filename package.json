@@ -1,0 +1,26 @@
+{
+  "name": "actual-projectionlab-sync",
+  "version": "0.1.0",
+  "description": "Browser extension that syncs Actual Budget account balances into ProjectionLab via the actual-http-api bridge.",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@11.4.0",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "biome check",
+    "format": "biome check --write",
+    "postinstall": "wxt prepare"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.7",
+    "wxt": "^0.19.0"
+  }
+}
