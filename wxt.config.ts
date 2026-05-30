@@ -7,6 +7,11 @@ import { defineConfig } from 'wxt';
 // about:debugging.
 export default defineConfig({
   manifestVersion: 3,
+  // Generates icons/*.png from one SVG at build time (no committed PNGs); dev builds
+  // get a grayscaled icon so the unpacked extension is distinguishable on the toolbar.
+  modules: ['@wxt-dev/auto-icons'],
+  // sizes default to [128, 48, 32, 16]; only the SVG source path needs overriding.
+  autoIcons: { baseIconPath: 'assets/icon.svg' },
   manifest: ({ browser }) => ({
     name: 'Actual → ProjectionLab Sync',
     description: 'Sync Actual Budget account balances into ProjectionLab.',

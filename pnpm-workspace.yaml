@@ -1,5 +1,8 @@
-# pnpm 11 gates dependency build scripts here. esbuild needs its postinstall
-# (Vite/WXT use it); spawn-sync is an unused transitive shim, no build needed.
+# pnpm 11 gates dependency build scripts here (allowBuilds: name -> allow?).
+# esbuild needs its postinstall (Vite/WXT use it); sharp is the native image lib
+# @wxt-dev/auto-icons uses to rasterize the icon at build time; spawn-sync is an
+# unused transitive shim, no build needed.
 allowBuilds:
   esbuild: true
+  sharp: true
   spawn-sync: false
