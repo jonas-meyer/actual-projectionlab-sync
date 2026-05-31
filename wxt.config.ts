@@ -17,7 +17,7 @@ export default defineConfig({
       ? {
           browser_specific_settings: {
             gecko: {
-              id: 'actual-projectionlab-sync@jonas-meyer.github.io',
+              id: 'actual-projectionlab-sync@jonasmeyerohle.dev',
               strict_min_version: '128.0',
             },
           },
