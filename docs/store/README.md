@@ -6,12 +6,15 @@ extension). Layout follows `alex-stout/projectionlab-account-sync`. Listing copy
 
 Put Chrome shots in `chrome/`, Firefox shots in `firefox/`.
 
-## Screenshots to capture (1280x800 PNG)
+## Screenshots (1280x800 PNG, padded with the theme background)
 
-- `01-popup.png` — popup, mapped and ready to Sync
-- `02-popup-synced.png` — popup after a successful Sync
-- `03-options-mapping.png` — options page showing the account-mapping table
-- `04-settings.png` — the settings form (blank fields)
+The same set lives in both `chrome/` and `firefox/`:
+
+- `01-popup.png` — popup, ready to Sync
+- `02-options-mapping.png` — options page, account-mapping table
+- `03-settings.png` — the settings form (demo values)
+- `04-popup-synced.png` — popup after a successful Sync
+- `05-popup-backfill.png` — popup, Backfill confirmation prompt
 
 ## Chrome promo tiles (optional)
 
