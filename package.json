@@ -1,6 +1,6 @@
 {
   "name": "actual-projectionlab-sync",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser extension that syncs Actual Budget account balances into ProjectionLab via the actual-http-api bridge.",
   "type": "module",
   "license": "MIT",

@@ -19,6 +19,8 @@ export default defineConfig({
             gecko: {
               id: 'actual-projectionlab-sync@jonasmeyerohle.dev',
               strict_min_version: '128.0',
+              // AMO-required: the extension transmits account balances to ProjectionLab.
+              data_collection_permissions: { required: ['financialAndPaymentInfo'] },
             },
           },
         }
