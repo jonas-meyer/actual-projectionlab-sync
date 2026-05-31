@@ -1,5 +1,4 @@
-# Local dev: Actual sync server + actual-http-api bridge (fly.*.example.toml for prod).
-#   cp .env.example .env && docker compose up -d
+# Local dev: cp .env.example .env && docker compose up -d
 services:
   actual-server:
     image: actualbudget/actual-server:latest

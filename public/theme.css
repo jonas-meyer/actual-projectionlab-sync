@@ -1,39 +1,35 @@
-/*
- * Shared popup/options theme, matching Actual Budget's palette
- * (actualbudget/actual: packages/component-library/src/themes).
- * Light by default; dark follows the system color-scheme preference.
- */
+/* Popup/options theme using Actual Budget's palette; dark via prefers-color-scheme. */
 :root {
   color-scheme: light dark;
-  --pl-bg: #e8ecf0; /* navy100 */
+  --pl-bg: #e8ecf0;
   --pl-surface: #ffffff;
   --pl-text: #272630;
   --pl-subdued: #6b7787;
-  --pl-border: #d9e2ec; /* navy150 */
-  --pl-primary: #8719e0; /* purple500 */
-  --pl-primary-hover: #7a0ecc; /* purple600 */
+  --pl-border: #d9e2ec;
+  --pl-primary: #8719e0;
+  --pl-primary-hover: #7a0ecc;
   --pl-on-primary: #ffffff;
   --pl-btn-bg: #ffffff;
-  --pl-btn-text: #102a43; /* navy900 */
-  --pl-btn-hover: #f0f4f6; /* gray80 */
-  --pl-good: #199473; /* green600 */
-  --pl-bad: #cf1124; /* red600 */
+  --pl-btn-text: #102a43;
+  --pl-btn-hover: #f0f4f6;
+  --pl-good: #199473;
+  --pl-bad: #cf1124;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --pl-bg: #080811; /* gray900 */
-    --pl-surface: #243b53; /* navy800 */
-    --pl-text: #d9e2ec; /* navy150 */
-    --pl-subdued: #829ab1; /* navy400 */
-    --pl-border: #486581; /* navy600 */
-    --pl-primary: #9446ed; /* purple400 */
-    --pl-primary-hover: #a368fc; /* purple300 */
-    --pl-btn-bg: #243b53; /* navy800 */
-    --pl-btn-text: #d9e2ec; /* navy150 */
-    --pl-btn-hover: #334e68; /* navy700 */
-    --pl-good: #3ebd93; /* green400 */
-    --pl-bad: #ef4e4e; /* red400 */
+    --pl-bg: #080811;
+    --pl-surface: #243b53;
+    --pl-text: #d9e2ec;
+    --pl-subdued: #829ab1;
+    --pl-border: #486581;
+    --pl-primary: #9446ed;
+    --pl-primary-hover: #a368fc;
+    --pl-btn-bg: #243b53;
+    --pl-btn-text: #d9e2ec;
+    --pl-btn-hover: #334e68;
+    --pl-good: #3ebd93;
+    --pl-bad: #ef4e4e;
   }
 }
 

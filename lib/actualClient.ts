@@ -1,13 +1,5 @@
-// actual-http-api bridge client. Called from the background worker.
-// Every request needs `x-api-key`. `budget-encryption-password` is sent only
-// when set (for end-to-end-encrypted budgets); the bridge treats its absence as
-// "no password" and downloads the budget without one (budget.js truthy check).
-// Endpoints (actual-http-api 26.5.2) wrap the payload in `{ data }`:
-//   GET  /v1/budgets/{syncId}/accounts   -> ActualAccount[]
-//   POST /v1/budgets/{syncId}/run-query  -> ActualQL result rows (body: { ActualQLquery })
-// run-query is an experimental operation: the bridge gates it behind
-// EXPERIMENTAL_OPERATIONS_ENABLED (on by default; deploy/ sets it explicitly).
-// Balances are integer minor units; divide by 100 before sending to ProjectionLab.
+// actual-http-api bridge client. Responses wrap the payload in `{ data }`. run-query is an
+// experimental bridge op (EXPERIMENTAL_OPERATIONS_ENABLED, on by default; deploy/ sets it).
 import type {
   AccountBalance,
   ActualAccount,
@@ -27,7 +19,6 @@ function headers(settings: Settings): Record<string, string> {
 async function getData<T>(url: string, settings: Settings, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    // The bridge scales to zero; the first request after idle can take ~20s.
     res = await fetch(url, {
       ...init,
       headers: { ...headers(settings), ...(init?.headers as Record<string, string>) },
@@ -52,8 +43,6 @@ export function listAccounts(settings: Settings): Promise<ActualAccount[]> {
   return getData<ActualAccount[]>(`${budgetBase(settings)}/accounts`, settings);
 }
 
-// Run an ActualQL query. One query returns every account's data at once, so there are
-// no per-account fetch loops and no bridge-race workaround to manage.
 function runQuery<T>(settings: Settings, query: object): Promise<T> {
   return getData<T>(`${budgetBase(settings)}/run-query`, settings, {
     method: 'POST',
@@ -62,8 +51,7 @@ function runQuery<T>(settings: Settings, query: object): Promise<T> {
   });
 }
 
-// Current balance (minor units) per account as of `until` (YYYY-MM-DD). `until` drops
-// future-dated transactions, matching the balance Actual displays.
+// `until` drops future-dated txns, matching the balance Actual displays.
 export function getAccountBalances(settings: Settings, until: string): Promise<AccountBalance[]> {
   return runQuery(settings, {
     table: 'transactions',
@@ -73,8 +61,6 @@ export function getAccountBalances(settings: Settings, until: string): Promise<A
   });
 }
 
-// Net change (minor units) per account per calendar month, up to `until`. A client-side
-// cumulative sum (see backfill.buildBackfill) turns this into the month-end series.
 export function getMonthlyDeltas(settings: Settings, until: string): Promise<MonthlyDelta[]> {
   return runQuery(settings, {
     table: 'transactions',

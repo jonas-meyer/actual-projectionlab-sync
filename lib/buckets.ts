@@ -1,7 +1,5 @@
-// Maps a ProjectionLab account to its net-worth bucket by PL's account category.
-// PL's API exposes an account's `type` but not the bucket it resolves to (see README
-// "ProjectionLab API limitation"), so history is bucketed only at the category level;
-// the investment tax-split is left to PL's live Current Finances.
+// Bucket by PL account CATEGORY only: the API exposes an account's type but not its bucket
+// (see README "ProjectionLab API limitation"). Don't reintroduce type-name bucketing.
 import type { Bucket, PlAccountRef, PlCategory } from './types';
 
 const CATEGORY_TO_BUCKET = {

@@ -4,7 +4,7 @@
 #   fly deploy -c fly.http-api.example.toml
 
 app = '<your-api-app>'
-primary_region = '<your-region>'      # e.g. lhr, match your Actual server's region
+primary_region = '<your-region>'
 
 kill_signal = 'SIGINT'
 kill_timeout = '5s'
@@ -32,7 +32,7 @@ kill_timeout = '5s'
 [[services]]
   protocol = 'tcp'
   internal_port = 5007
-  auto_stop_machines = 'stop'         # scale to zero when idle
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 

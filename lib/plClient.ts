@@ -1,10 +1,6 @@
-// ProjectionLab Plugin API client, called from the background worker. Injects a
-// self-contained function into the PL page's MAIN world (via scripting) to call
-// window.projectionlabPluginAPI. The key and data are passed as injected args,
-// not broadcast on the page.
+// Calls window.projectionlabPluginAPI by injecting into the PL tab's MAIN world.
+import { PL_HOST_MATCH } from './projectionlab';
 import type { PlAccount, PlAccountRef, PlCategory, PlExportData, PlProgress } from './types';
-
-const PL_TAB_MATCH = 'https://app.projectionlab.com/*';
 
 type PlOp =
   | { method: 'exportData'; key: string }
@@ -14,7 +10,7 @@ type PlOp =
 type CallResult = { ok: true; data: unknown } | { ok: false; error: string };
 
 async function plTabId(): Promise<number> {
-  const tabs = await browser.tabs.query({ url: PL_TAB_MATCH });
+  const tabs = await browser.tabs.query({ url: PL_HOST_MATCH });
   const id = tabs.find((t) => t.id !== undefined)?.id;
   if (id === undefined) throw new Error('Open ProjectionLab in a tab, then sync.');
   return id;
@@ -35,11 +31,10 @@ async function run(op: PlOp): Promise<unknown> {
   return result.data;
 }
 
-// Runs in the page's MAIN world. Must be self-contained: no imports or closure
-// over module scope, only injected args and page globals.
+// Runs in the page's MAIN world: must be self-contained (no closure over module scope).
 async function pageCall(op: PlOp): Promise<CallResult> {
   try {
-    // ProjectionLab injects the API after its app boots, so poll for it (~10s).
+    // PL injects the API after its app boots, so poll (~10s).
     const api = await (async () => {
       for (let i = 0; i < 100; i += 1) {
         if (window.projectionlabPluginAPI) return window.projectionlabPluginAPI;
@@ -71,7 +66,6 @@ export async function exportData(plKey: string): Promise<PlExportData> {
   return (await run({ method: 'exportData', key: plKey })) as PlExportData;
 }
 
-// Flatten exportData's account arrays into one list tagged with category.
 export async function listPlAccounts(plKey: string): Promise<PlAccountRef[]> {
   const { today } = await exportData(plKey);
   const groups: [PlAccount[], PlCategory][] = [
@@ -85,8 +79,7 @@ export async function listPlAccounts(plKey: string): Promise<PlAccountRef[]> {
   );
 }
 
-// Debt accounts have no `balance`; they store the amount owed as a positive `amount`,
-// so a mapped balance of -2541.57 becomes amount 2541.57. Other types take `balance`.
+// PL debt accounts have no `balance`: store the owed amount as positive `amount` (so negate).
 export async function updateAccount(
   account: PlAccountRef,
   valueDollars: number,

@@ -1,8 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
-  <!-- Single source of truth; @wxt-dev/auto-icons rasterizes this to icons/*.png at build.
-       Two app tiles, integration-style: Actual Budget (top-left) and ProjectionLab
-       (bottom-right). Actual mark is its official logo path; colours sampled from each
-       app's real icon. The project is not affiliated with either app (see README). -->
+  <!-- Source for icons/*.png (rasterized by @wxt-dev/auto-icons). Generic letter "A" + bar
+       chart, deliberately not Actual's / ProjectionLab's logos. Not affiliated (see README). -->
   <defs>
     <radialGradient id="actualBg" cx="0.42" cy="0.40" r="0.78">
       <stop offset="0" stop-color="#6849BF"/>
@@ -13,29 +11,24 @@
       <stop offset="0.5" stop-color="#74AEEF"/>
       <stop offset="1" stop-color="#9773F4"/>
     </linearGradient>
-    <!-- Carve a 3px transparent gap out of the Actual tile where the PL tile overlaps. -->
     <mask id="tileGap">
       <rect width="128" height="128" fill="white"/>
       <rect x="50" y="50" width="78" height="78" rx="20" fill="black"/>
     </mask>
   </defs>
 
-  <!-- Actual Budget tile (top-left) -->
   <g mask="url(#tileGap)">
     <rect x="3" y="3" width="72" height="72" rx="17" fill="url(#actualBg)"/>
-    <g transform="translate(13.75,11.4) scale(1.35)" fill="#ffffff">
-      <path d="M1.13785 30.4226L14.9372 1.11397C14.99 1.00184 15.1027 0.930283 15.2267 0.930283H15.8318C15.9542 0.930283 16.0659 1.00015 16.1195 1.11023L25.0219 19.3999L27.8131 18.3264C27.978 18.2629 28.1632 18.3452 28.2266 18.5102L28.9695 20.4417C29.033 20.6067 28.9507 20.7918 28.7857 20.8553L26.2121 21.8452L29.3875 28.3689C29.4648 28.5278 29.3987 28.7193 29.2398 28.7967L27.379 29.7024C27.2201 29.7798 27.0286 29.7136 26.9512 29.5547L23.6739 22.8215L1.6943 31.2754C1.52935 31.3389 1.3442 31.2566 1.28075 31.0916C1.28006 31.0898 1.27938 31.088 1.27872 31.0862L1.12666 30.6684C1.09749 30.5883 1.10152 30.4998 1.13785 30.4226ZM15.56 6.1518L5.85065 26.7737L22.4837 20.3762L15.56 6.1518Z"/>
-      <path d="M21.7768 14.5682L22.7095 17.1121L1.50597 24.8867C1.34004 24.9476 1.1562 24.8624 1.09536 24.6964L0.382928 22.7534C0.322087 22.5875 0.407278 22.4037 0.573207 22.3428L21.7768 14.5682Z"/>
-    </g>
+    <path d="M20 49 L34 16 L48 49 M25.5 36 L42.5 36" fill="none" stroke="#ffffff"
+      stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 
-  <!-- ProjectionLab tile (bottom-right) -->
   <g>
     <rect x="53" y="53" width="72" height="72" rx="17" fill="url(#plBg)"/>
     <g fill="#ffffff">
-      <rect x="63.6" y="90.9" width="14" height="24.1" rx="7"/>
-      <rect x="81.1" y="77.6" width="14" height="37.4" rx="7"/>
-      <rect x="99.4" y="63.5" width="14" height="51.5" rx="7"/>
+      <rect x="66" y="93" width="13" height="22" rx="3"/>
+      <rect x="86" y="77" width="13" height="38" rx="3"/>
+      <rect x="106" y="61" width="13" height="54" rx="3"/>
     </g>
   </g>
 </svg>

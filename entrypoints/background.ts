@@ -1,5 +1,4 @@
-// Background worker: handles popup/options actions. Bridge fetches happen here,
-// where they aren't subject to page CORS.
+// Bridge fetches run in the background worker to avoid page CORS.
 import { getAccountBalances, getMonthlyDeltas, listAccounts } from '@/lib/actualClient';
 import { buildBackfill, ymd } from '@/lib/backfill';
 import { bucketOfPlAccount } from '@/lib/buckets';
@@ -24,8 +23,6 @@ export default defineBackground(() => {
   onMessage('getMapperData', runGetMapperData);
 });
 
-// Validate the saved settings once and narrow Partial<Settings> to a complete Settings.
-// The error arm is shaped to return straight to the popup/options UI as a SyncResult.
 type SettingsGate = { ok: false; error: string } | { ok: true; settings: Settings };
 
 function requireSettings(s: Partial<Settings>): SettingsGate {
@@ -47,8 +44,6 @@ function requireSettings(s: Partial<Settings>): SettingsGate {
   };
 }
 
-// For each PL account, sum the balances of the Actual accounts mapped to it and
-// write the total via updateAccount. Returns the number of accounts written.
 async function pushCurrentBalances(
   plKey: string,
   mapping: Mapping,
@@ -56,10 +51,10 @@ async function pushCurrentBalances(
   plById: Map<string, PlAccountRef>,
 ): Promise<number> {
   let updated = 0;
-  for (const [plId, sum] of sumBalancesByPlAccount(mapping, currentByActualId)) {
+  for (const [plId, cents] of sumBalancesByPlAccount(mapping, currentByActualId)) {
     const account = plById.get(plId);
-    if (!account) continue; // mapped to a PL account that no longer exists
-    await updateAccount(account, Math.round(sum * 100) / 100, plKey);
+    if (!account) continue;
+    await updateAccount(account, cents / 100, plKey);
     updated += 1;
   }
   return updated;
@@ -74,28 +69,24 @@ async function runSync(): Promise<SyncResult> {
     return { ok: false, error: 'No accounts mapped yet. Use "Map accounts" first.' };
   }
   try {
-    // Different backends (PL page vs bridge), so fetch them concurrently.
     const [plAccounts, balances] = await Promise.all([
       listPlAccounts(settings.plKey),
       getAccountBalances(settings, ymd(new Date())),
     ]);
     const plById = new Map<string, PlAccountRef>(plAccounts.map((p) => [p.id, p]));
-    const current = new Map(balances.map((b) => [b.account, b.balance / 100]));
-    const updated = await pushCurrentBalances(settings.plKey, mapping, current, plById);
+    const currentByActualId = new Map(balances.map((b) => [b.account, b.balance]));
+    const updated = await pushCurrentBalances(settings.plKey, mapping, currentByActualId, plById);
     return { ok: true, detail: `Updated ${updated} ProjectionLab account(s) from Actual.` };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 
-// Heals the saved mapping against the live accounts before the mapper renders:
-// drops links whose Actual or PL account is gone, then fills unmapped accounts that
-// exactly match a PL account by name. Returns a short summary, or '' if unchanged.
 async function reconcileMapping(
   accounts: ActualAccount[],
   plAccounts: PlAccountRef[],
 ): Promise<string> {
-  // Don't prune against an empty list (e.g. PL still loading would look "all stale").
+  // Don't prune against an empty list (PL still loading would look "all stale").
   if (accounts.length === 0 || plAccounts.length === 0) return '';
   const mapping = await store.mapping.getValue();
   const { valid, unmappedActual, unmappedPl } = reconcile(mapping, accounts, plAccounts);
@@ -115,7 +106,6 @@ async function runGetMapperData(): Promise<MapperData> {
   if (!gate.ok) return gate;
   const { settings } = gate;
   try {
-    // Different backends (bridge vs PL page), so fetch them concurrently.
     const [accounts, plAccounts] = await Promise.all([
       listAccounts(settings),
       listPlAccounts(settings.plKey),
@@ -132,8 +122,6 @@ async function runGetMapperData(): Promise<MapperData> {
   }
 }
 
-// Backfill preview: how many history points ProjectionLab already has, so the
-// popup can confirm before Backfill replaces them.
 async function runBackfillPreview(): Promise<SyncResult> {
   const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
@@ -145,32 +133,25 @@ async function runBackfillPreview(): Promise<SyncResult> {
   }
 }
 
-// Backfill apply: set current account balances AND replace ProjectionLab's net-worth
-// history with a monthly series from Actual (authoritative reset; confirmed in popup).
 async function runBackfillApply(): Promise<SyncResult> {
   const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
   const { settings } = gate;
 
   try {
-    // Different backends (bridge vs PL page), so fetch them concurrently.
     const [accounts, plAccounts] = await Promise.all([
       listAccounts(settings),
       listPlAccounts(settings.plKey),
     ]);
     const mapping = await store.mapping.getValue();
     const plById = new Map<string, PlAccountRef>(plAccounts.map((p) => [p.id, p]));
-    // Mapped accounts bucket by their PL account's category; unmapped ones (e.g.
-    // closed accounts) fall back to sign alone. netWorth stays exact either way.
-    const bucketFor = (account: ActualAccount, balance: number): Bucket => {
+    const bucketFor = (account: ActualAccount, cents: number): Bucket => {
       const pl = plById.get(mapping[account.id] ?? '');
       if (pl) return bucketOfPlAccount(pl);
-      return balance < 0 ? 'debt' : 'savings';
+      return cents < 0 ? 'debt' : 'savings';
     };
 
-    // One ActualQL query for every account's monthly deltas. buildBackfill turns it into
-    // the month-end series AND the current per-account balances in one pass. `ymd(now)`
-    // drops future-dated transactions, matching Actual.
+    // ymd(now) drops future-dated txns, matching the balance Actual displays.
     const now = new Date();
     const deltas = await getMonthlyDeltas(settings, ymd(now));
     const { points, currentByActualId } = buildBackfill(deltas, accounts, now, bucketFor);
