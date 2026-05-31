@@ -1,6 +1,6 @@
 import { fakeBrowser } from '@webext-core/fake-browser';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getMapping, getSettings, saveMapping, saveSettings } from './storage';
+import { store } from './storage';
 
 describe('storage', () => {
   beforeEach(() => {
@@ -8,14 +8,22 @@ describe('storage', () => {
   });
 
   it('falls back to empty until something is saved', async () => {
-    expect(await getSettings()).toEqual({});
-    expect(await getMapping()).toEqual({});
+    expect(await store.settings.getValue()).toEqual({});
+    expect(await store.mapping.getValue()).toEqual({});
   });
 
   it('round-trips settings and mapping through extension storage', async () => {
-    await saveSettings({ bridgeUrl: 'https://bridge', apiKey: 'k', syncId: 's', plKey: 'p' });
-    await saveMapping({ a1: 'p1' });
-    expect(await getSettings()).toMatchObject({ bridgeUrl: 'https://bridge', plKey: 'p' });
-    expect(await getMapping()).toEqual({ a1: 'p1' });
+    await store.settings.setValue({
+      bridgeUrl: 'https://bridge',
+      apiKey: 'k',
+      syncId: 's',
+      plKey: 'p',
+    });
+    await store.mapping.setValue({ a1: 'p1' });
+    expect(await store.settings.getValue()).toMatchObject({
+      bridgeUrl: 'https://bridge',
+      plKey: 'p',
+    });
+    expect(await store.mapping.getValue()).toEqual({ a1: 'p1' });
   });
 });

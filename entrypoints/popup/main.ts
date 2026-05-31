@@ -1,5 +1,5 @@
 // Popup: "Sync Now", "Backfill", and links to the options page.
-import { sendMessage } from '@/lib/messaging';
+import { type ProtocolMap, sendMessage } from '@/lib/messaging';
 import type { SyncResult } from '@/lib/types';
 
 const statusEl = document.querySelector<HTMLElement>('#status')!;
@@ -18,7 +18,9 @@ document.querySelector<HTMLButtonElement>('#map-accounts')!.addEventListener('cl
   browser.runtime.openOptionsPage();
 });
 
-type SyncMessage = 'syncNow' | 'backfillPreview' | 'backfillApply';
+// Messages the popup sends: the whole protocol except getMapperData, which returns
+// MapperData rather than SyncResult.
+type SyncMessage = keyof Omit<ProtocolMap, 'getMapperData'>;
 
 // sendMessage rejects if the worker is asleep or reloaded; turn that into an error
 // result instead of an unhandled rejection that leaves the status text stuck.

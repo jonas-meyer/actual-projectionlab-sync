@@ -4,7 +4,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { MapperData, SyncResult } from './types';
 
-interface ProtocolMap {
+export interface ProtocolMap {
   syncNow(): SyncResult;
   backfillPreview(): SyncResult;
   backfillApply(): SyncResult;
