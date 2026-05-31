@@ -3,13 +3,13 @@
 import { getAccountBalances, getMonthlyDeltas, listAccounts } from '@/lib/actualClient';
 import { buildBackfill, ymd } from '@/lib/backfill';
 import { bucketOfPlAccount } from '@/lib/buckets';
-import { autoLinkByName, reconcile } from '@/lib/mapping';
+import { autoLinkByName, reconcile, sumBalancesByPlAccount } from '@/lib/mapping';
+import { onMessage } from '@/lib/messaging';
 import { exportData, listPlAccounts, restoreProgress, updateAccount } from '@/lib/plClient';
-import { getMapping, getSettings, saveMapping } from '@/lib/storage';
+import { store } from '@/lib/storage';
 import type {
   ActualAccount,
   Bucket,
-  ExtensionMessage,
   MapperData,
   Mapping,
   PlAccountRef,
@@ -18,16 +18,10 @@ import type {
 } from '@/lib/types';
 
 export default defineBackground(() => {
-  const handlers = {
-    SYNC_NOW: runSync,
-    BACKFILL_PREVIEW: runBackfillPreview,
-    BACKFILL_APPLY: runBackfillApply,
-    GET_MAPPER_DATA: runGetMapperData,
-  } satisfies Record<ExtensionMessage['type'], () => Promise<SyncResult | MapperData>>;
-  browser.runtime.onMessage.addListener((message: unknown) => {
-    const msg = message as ExtensionMessage | undefined;
-    return msg ? handlers[msg.type]?.() : undefined;
-  });
+  onMessage('syncNow', runSync);
+  onMessage('backfillPreview', runBackfillPreview);
+  onMessage('backfillApply', runBackfillApply);
+  onMessage('getMapperData', runGetMapperData);
 });
 
 // Validate the saved settings once and narrow Partial<Settings> to a complete Settings.
@@ -61,14 +55,8 @@ async function pushCurrentBalances(
   currentByActualId: Map<string, number>,
   plById: Map<string, PlAccountRef>,
 ): Promise<number> {
-  const sumByPl = new Map<string, number>();
-  for (const [actualId, plId] of Object.entries(mapping)) {
-    const balance = currentByActualId.get(actualId);
-    if (balance === undefined) continue;
-    sumByPl.set(plId, (sumByPl.get(plId) ?? 0) + balance);
-  }
   let updated = 0;
-  for (const [plId, sum] of sumByPl) {
+  for (const [plId, sum] of sumBalancesByPlAccount(mapping, currentByActualId)) {
     const account = plById.get(plId);
     if (!account) continue; // mapped to a PL account that no longer exists
     await updateAccount(account, Math.round(sum * 100) / 100, plKey);
@@ -78,10 +66,10 @@ async function pushCurrentBalances(
 }
 
 async function runSync(): Promise<SyncResult> {
-  const gate = requireSettings(await getSettings());
+  const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
   const { settings } = gate;
-  const mapping = await getMapping();
+  const mapping = await store.mapping.getValue();
   if (Object.keys(mapping).length === 0) {
     return { ok: false, error: 'No accounts mapped yet. Use "Map accounts" first.' };
   }
@@ -109,13 +97,13 @@ async function reconcileMapping(
 ): Promise<string> {
   // Don't prune against an empty list (e.g. PL still loading would look "all stale").
   if (accounts.length === 0 || plAccounts.length === 0) return '';
-  const mapping = await getMapping();
+  const mapping = await store.mapping.getValue();
   const { valid, unmappedActual, unmappedPl } = reconcile(mapping, accounts, plAccounts);
   const links = autoLinkByName(unmappedActual, unmappedPl);
   const removed = Object.keys(mapping).length - Object.keys(valid).length;
   const added = Object.keys(links).length;
   if (removed === 0 && added === 0) return '';
-  await saveMapping({ ...valid, ...links });
+  await store.mapping.setValue({ ...valid, ...links });
   const parts: string[] = [];
   if (removed) parts.push(`removed ${removed} stale link${removed === 1 ? '' : 's'}`);
   if (added) parts.push(`matched ${added} by name`);
@@ -123,7 +111,7 @@ async function reconcileMapping(
 }
 
 async function runGetMapperData(): Promise<MapperData> {
-  const gate = requireSettings(await getSettings());
+  const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
   const { settings } = gate;
   try {
@@ -147,7 +135,7 @@ async function runGetMapperData(): Promise<MapperData> {
 // Backfill preview: how many history points ProjectionLab already has, so the
 // popup can confirm before Backfill replaces them.
 async function runBackfillPreview(): Promise<SyncResult> {
-  const gate = requireSettings(await getSettings());
+  const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
   try {
     const data = await exportData(gate.settings.plKey);
@@ -160,7 +148,7 @@ async function runBackfillPreview(): Promise<SyncResult> {
 // Backfill apply: set current account balances AND replace ProjectionLab's net-worth
 // history with a monthly series from Actual (authoritative reset; confirmed in popup).
 async function runBackfillApply(): Promise<SyncResult> {
-  const gate = requireSettings(await getSettings());
+  const gate = requireSettings(await store.settings.getValue());
   if (!gate.ok) return gate;
   const { settings } = gate;
 
@@ -170,7 +158,7 @@ async function runBackfillApply(): Promise<SyncResult> {
       listAccounts(settings),
       listPlAccounts(settings.plKey),
     ]);
-    const mapping = await getMapping();
+    const mapping = await store.mapping.getValue();
     const plById = new Map<string, PlAccountRef>(plAccounts.map((p) => [p.id, p]));
     // Mapped accounts bucket by their PL account's category; unmapped ones (e.g.
     // closed accounts) fall back to sign alone. netWorth stays exact either way.

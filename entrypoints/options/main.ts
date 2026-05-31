@@ -1,14 +1,15 @@
 // Options page: persists settings, and maps each Actual account to a ProjectionLab
 // account (the mapping is reused by Backfill's bucketing and the forward sync).
+import { sendMessage } from '@/lib/messaging';
 import { ensureBridgePermission } from '@/lib/permissions';
-import { getMapping, getSettings, saveMapping, saveSettings } from '@/lib/storage';
+import { store } from '@/lib/storage';
 import type { MapperData, PlAccountRef, Settings } from '@/lib/types';
 
 const form = document.querySelector<HTMLFormElement>('#settings')!;
 const statusEl = document.querySelector<HTMLElement>('#status')!;
 
 // Prefill from storage.
-getSettings().then((s) => {
+store.settings.getValue().then((s) => {
   for (const [k, v] of Object.entries(s)) {
     const field = form.elements.namedItem(k) as HTMLInputElement | null;
     if (field) field.value = String(v);
@@ -23,7 +24,7 @@ form.addEventListener('submit', async (e) => {
     // so call it before any other await.
     const granted = data.bridgeUrl ? await ensureBridgePermission(data.bridgeUrl) : true;
 
-    await saveSettings(data);
+    await store.settings.setValue(data);
     statusEl.textContent = granted
       ? 'Saved'
       : 'Saved, but host access was denied (https, or http only for localhost); syncing needs it. Re-save to grant.';
@@ -44,17 +45,15 @@ const mapTable = document.querySelector<HTMLTableElement>('#map-table')!;
 
 document.querySelector<HTMLButtonElement>('#load-accounts')!.addEventListener('click', async () => {
   mapStatus.textContent = 'Loading accounts...';
-  let data: MapperData | undefined;
+  let data: MapperData;
   try {
-    data = (await browser.runtime.sendMessage({ type: 'GET_MAPPER_DATA' })) as
-      | MapperData
-      | undefined;
+    data = await sendMessage('getMapperData');
   } catch {
     mapStatus.textContent = 'No response from the extension. Reload it and retry.';
     return;
   }
-  if (!data?.ok || !data.actualAccounts || !data.plAccounts) {
-    mapStatus.textContent = data?.error ?? 'Failed to load accounts.';
+  if (!data.ok || !data.actualAccounts || !data.plAccounts) {
+    mapStatus.textContent = data.error ?? 'Failed to load accounts.';
     return;
   }
   await renderMapping(data.actualAccounts, data.plAccounts);
@@ -67,7 +66,7 @@ async function renderMapping(
   actualAccounts: { id: string; name: string }[],
   plAccounts: PlAccountRef[],
 ): Promise<void> {
-  const mapping = await getMapping();
+  const mapping = await store.mapping.getValue();
   mapTable.replaceChildren();
   for (const account of actualAccounts) {
     const row = mapTable.insertRow();
@@ -80,10 +79,10 @@ async function renderMapping(
     }
     select.value = mapping[account.id] ?? '';
     select.addEventListener('change', async () => {
-      const current = await getMapping();
+      const current = await store.mapping.getValue();
       if (select.value) current[account.id] = select.value;
       else delete current[account.id];
-      await saveMapping(current);
+      await store.mapping.setValue(current);
       mapStatus.textContent = 'Mapping saved.';
     });
     row.insertCell().appendChild(select);

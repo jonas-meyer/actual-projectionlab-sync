@@ -1,5 +1,6 @@
 // Popup: "Sync Now", "Backfill", and links to the options page.
-import type { ExtensionMessage, SyncResult } from '@/lib/types';
+import { type ProtocolMap, sendMessage } from '@/lib/messaging';
+import type { SyncResult } from '@/lib/types';
 
 const statusEl = document.querySelector<HTMLElement>('#status')!;
 const syncBtn = document.querySelector<HTMLButtonElement>('#sync')!;
@@ -17,13 +18,15 @@ document.querySelector<HTMLButtonElement>('#map-accounts')!.addEventListener('cl
   browser.runtime.openOptionsPage();
 });
 
-// Send to the background worker, turning a dropped message channel (worker asleep or
-// reloaded) into an error result instead of an unhandled rejection that leaves the
-// status text stuck.
-async function send(message: ExtensionMessage): Promise<SyncResult> {
+// Messages the popup sends: the whole protocol except getMapperData, which returns
+// MapperData rather than SyncResult.
+type SyncMessage = keyof Omit<ProtocolMap, 'getMapperData'>;
+
+// sendMessage rejects if the worker is asleep or reloaded; turn that into an error
+// result instead of an unhandled rejection that leaves the status text stuck.
+async function send(type: SyncMessage): Promise<SyncResult> {
   try {
-    const result = (await browser.runtime.sendMessage(message)) as SyncResult | undefined;
-    return result ?? { ok: false, error: noResponse };
+    return await sendMessage(type);
   } catch {
     return { ok: false, error: noResponse };
   }
@@ -53,7 +56,7 @@ async function withButtonsDisabled(action: () => Promise<void>): Promise<void> {
 syncBtn.addEventListener('click', () =>
   withButtonsDisabled(async () => {
     statusEl.textContent = 'Syncing...';
-    showResult(await send({ type: 'SYNC_NOW' }));
+    showResult(await send('syncNow'));
   }),
 );
 
@@ -65,11 +68,11 @@ backfillBtn.addEventListener('click', () =>
     if (backfillArmed) {
       backfillArmed = false;
       statusEl.textContent = 'Backfilling from Actual... (this can take a minute)';
-      showResult(await send({ type: 'BACKFILL_APPLY' }));
+      showResult(await send('backfillApply'));
       return;
     }
     statusEl.textContent = 'Checking ProjectionLab...';
-    const preview = await send({ type: 'BACKFILL_PREVIEW' });
+    const preview = await send('backfillPreview');
     if (!preview.ok) {
       statusEl.textContent = preview.error ?? noResponse;
       return;
