@@ -48,8 +48,8 @@ into their ProjectionLab account.
   account mapping locally in the browser.
 - **scripting** — injects a one-shot script into your open ProjectionLab tab to call its Plugin
   API (update balances, restore net-worth history). No persistent content script.
-- **host: `https://*.projectionlab.com/*`** — to find the ProjectionLab tab (the main app or an
-  early-access subdomain like ea./preview.) and run the Plugin API call there.
+- **host: `app.projectionlab.com` + `ea.projectionlab.com`** — to find the ProjectionLab tab
+  (main app or early access) and run the Plugin API call there.
 - **optional host: `https://*/*`, `http://localhost/*`, `http://127.0.0.1/*`** — your bridge is
   self-hosted at a URL only you know, so the extension requests that *specific* origin at runtime
   (not all of them). Plaintext http is allowed only for loopback; remote bridges must be https.

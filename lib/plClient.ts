@@ -1,5 +1,5 @@
 // Calls window.projectionlabPluginAPI by injecting into the PL tab's MAIN world.
-import { PL_HOST_MATCH } from './projectionlab';
+import { PL_HOST_MATCHES } from './projectionlab';
 import type { PlAccount, PlAccountRef, PlCategory, PlExportData, PlProgress } from './types';
 
 type PlOp =
@@ -10,7 +10,7 @@ type PlOp =
 type CallResult = { ok: true; data: unknown } | { ok: false; error: string };
 
 async function plTabId(): Promise<number> {
-  const tabs = await browser.tabs.query({ url: PL_HOST_MATCH });
+  const tabs = await browser.tabs.query({ url: PL_HOST_MATCHES });
   const id = tabs.find((t) => t.id !== undefined)?.id;
   if (id === undefined) throw new Error('Open ProjectionLab in a tab, then sync.');
   return id;
