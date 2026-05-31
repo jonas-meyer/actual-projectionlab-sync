@@ -4,10 +4,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
-  # No grouping: each update is its own PR, so majors (and wxt's breaking 0.x "minor"
-  # bumps) stay isolated and reviewable. Grouping can't do "batch minor/patch, majors
-  # individual" - a group with update-types marks matched deps handled and silently
-  # drops their major PRs (dependabot-core#14202).
   - package-ecosystem: npm
     directory: /
     schedule:
