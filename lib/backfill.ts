@@ -1,11 +1,10 @@
 import type { ActualAccount, Bucket, MonthlyDelta, PlProgressPoint } from './types';
 
-const round2 = (n: number): number => Math.round(n * 100) / 100;
-
+// Amounts stay integer cents until the /100 that produces each major-unit field below.
 export function buildPoint(
   dateMs: number,
-  entries: { account: ActualAccount; balance: number }[],
-  bucketFor: (account: ActualAccount, balance: number) => Bucket,
+  entries: { account: ActualAccount; cents: number }[],
+  bucketFor: (account: ActualAccount, cents: number) => Bucket,
 ): PlProgressPoint {
   const b: Record<Bucket, number> = {
     savings: 0,
@@ -18,25 +17,24 @@ export function buildPoint(
     loans: 0,
   };
   let netWorth = 0;
-  for (const { account, balance } of entries) {
-    b[bucketFor(account, balance)] += balance;
-    netWorth += balance;
+  for (const { account, cents } of entries) {
+    b[bucketFor(account, cents)] += cents;
+    netWorth += cents;
   }
   return {
     date: dateMs,
-    netWorth: round2(netWorth),
-    savings: round2(b.savings),
-    taxable: round2(b.taxable),
-    taxDeferred: round2(b.taxDeferred),
-    taxFree: round2(b.taxFree),
-    crypto: round2(b.crypto),
-    assets: round2(b.assets),
-    debt: round2(b.debt),
-    loans: round2(b.loans),
+    netWorth: netWorth / 100,
+    savings: b.savings / 100,
+    taxable: b.taxable / 100,
+    taxDeferred: b.taxDeferred / 100,
+    taxFree: b.taxFree / 100,
+    crypto: b.crypto / 100,
+    assets: b.assets / 100,
+    debt: b.debt / 100,
+    loans: b.loans / 100,
   };
 }
 
-// Month-end dates going back `maxMonths` from `now` (most recent first).
 export function monthEndCutoffs(now: Date, maxMonths: number): Date[] {
   return Array.from(
     { length: maxMonths },
@@ -44,7 +42,6 @@ export function monthEndCutoffs(now: Date, maxMonths: number): Date[] {
   );
 }
 
-// Whole months from the start of `yyyymm` (e.g. '2022-09') through `now`, inclusive.
 export function monthsSince(yyyymm: string, now: Date): number {
   const [year, month] = yyyymm.split('-').map(Number);
   return (now.getFullYear() - year) * 12 + (now.getMonth() + 1 - month) + 1;
@@ -56,29 +53,19 @@ export function ymd(d: Date): string {
 }
 
 export interface BackfillResult {
-  /** Month-end net-worth snapshots, oldest first. */
   points: PlProgressPoint[];
-  /** Each account's current balance in major units, keyed by Actual account id. */
   currentByActualId: Map<string, number>;
 }
 
-// Cumulatively sum per-account monthly deltas into a month-end net-worth series AND each
-// account's current balance, in a single pass: one point per month from the earliest
-// delta month through `now`. Months with no delta for an account carry the previous
-// balance forward. The final cumulative balances are the current balances, so callers
-// get them here rather than re-summing the deltas.
 export function buildBackfill(
   deltas: MonthlyDelta[],
   accounts: ActualAccount[],
   now: Date,
-  bucketFor: (account: ActualAccount, balance: number) => Bucket,
+  bucketFor: (account: ActualAccount, cents: number) => Bucket,
 ): BackfillResult {
   if (deltas.length === 0) return { points: [], currentByActualId: new Map() };
   const earliest = deltas.reduce((min, d) => (d.month < min ? d.month : min), deltas[0].month);
   const cutoffs = [...monthEndCutoffs(now, monthsSince(earliest, now))].reverse(); // oldest first
-
-  // Group each month's deltas so a month applies only the accounts that changed,
-  // instead of scanning every account every month.
   const deltasByMonth = Map.groupBy(deltas, (delta) => delta.month);
 
   const balanceCents = new Map<string, number>();
@@ -89,12 +76,9 @@ export function buildBackfill(
     }
     const entries = accounts.map((account) => ({
       account,
-      balance: (balanceCents.get(account.id) ?? 0) / 100,
+      cents: balanceCents.get(account.id) ?? 0,
     }));
     points.push(buildPoint(cutoff.getTime(), entries, bucketFor));
   }
-  const currentByActualId = new Map(
-    Array.from(balanceCents, ([account, cents]) => [account, cents / 100]),
-  );
-  return { points, currentByActualId };
+  return { points, currentByActualId: new Map(balanceCents) };
 }

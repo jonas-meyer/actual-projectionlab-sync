@@ -1,4 +1,3 @@
-// Popup: "Sync Now", "Backfill", and links to the options page.
 import { type ProtocolMap, sendMessage } from '@/lib/messaging';
 import type { SyncResult } from '@/lib/types';
 
@@ -13,17 +12,14 @@ document.querySelector<HTMLAnchorElement>('#open-options')!.addEventListener('cl
   browser.runtime.openOptionsPage();
 });
 
-// Opens the options page, where the Account mapping table lives.
 document.querySelector<HTMLButtonElement>('#map-accounts')!.addEventListener('click', () => {
   browser.runtime.openOptionsPage();
 });
 
-// Messages the popup sends: the whole protocol except getMapperData, which returns
-// MapperData rather than SyncResult.
+// All messages but getMapperData, which returns MapperData rather than SyncResult.
 type SyncMessage = keyof Omit<ProtocolMap, 'getMapperData'>;
 
-// sendMessage rejects if the worker is asleep or reloaded; turn that into an error
-// result instead of an unhandled rejection that leaves the status text stuck.
+// Turn a dropped message channel into an error result, not an unhandled rejection.
 async function send(type: SyncMessage): Promise<SyncResult> {
   try {
     return await sendMessage(type);
@@ -36,8 +32,7 @@ function showResult(result: SyncResult): void {
   statusEl.textContent = result.ok ? (result.detail ?? 'Done') : (result.error ?? noResponse);
 }
 
-// Run a bridge action with both buttons disabled so a double-click can't fire concurrent
-// requests; the bridge serves one budget at a time and 404s when calls overlap.
+// Disable both buttons during an action: concurrent bridge calls race (one budget at a time).
 let busy = false;
 async function withButtonsDisabled(action: () => Promise<void>): Promise<void> {
   if (busy) return;
@@ -60,8 +55,7 @@ syncBtn.addEventListener('click', () =>
   }),
 );
 
-// Backfill replaces PL's history, so confirm with a second click (native confirm()
-// dialogs are unreliable in extension popups). First click previews + arms; second applies.
+// Two-click confirm (native confirm() is unreliable in popups): first arms, second applies.
 let backfillArmed = false;
 backfillBtn.addEventListener('click', () =>
   withButtonsDisabled(async () => {

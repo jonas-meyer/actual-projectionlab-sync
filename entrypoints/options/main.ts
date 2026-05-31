@@ -1,5 +1,3 @@
-// Options page: persists settings, and maps each Actual account to a ProjectionLab
-// account (the mapping is reused by Backfill's bucketing and the forward sync).
 import { sendMessage } from '@/lib/messaging';
 import { ensureBridgePermission } from '@/lib/permissions';
 import { store } from '@/lib/storage';
@@ -8,7 +6,6 @@ import type { MapperData, PlAccountRef, Settings } from '@/lib/types';
 const form = document.querySelector<HTMLFormElement>('#settings')!;
 const statusEl = document.querySelector<HTMLElement>('#status')!;
 
-// Prefill from storage.
 store.settings.getValue().then((s) => {
   for (const [k, v] of Object.entries(s)) {
     const field = form.elements.namedItem(k) as HTMLInputElement | null;
@@ -20,8 +17,7 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const data = Object.fromEntries(new FormData(form).entries()) as unknown as Partial<Settings>;
   try {
-    // Request host access for the bridge origin. Must run inside the user gesture,
-    // so call it before any other await.
+    // Must run inside the user gesture (before any await) for permissions.request to work.
     const granted = data.bridgeUrl ? await ensureBridgePermission(data.bridgeUrl) : true;
 
     await store.settings.setValue(data);
@@ -39,7 +35,6 @@ form.addEventListener('submit', async (e) => {
   }
 });
 
-// Account mapping.
 const mapStatus = document.querySelector<HTMLElement>('#map-status')!;
 const mapTable = document.querySelector<HTMLTableElement>('#map-table')!;
 

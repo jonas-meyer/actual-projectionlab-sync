@@ -1,0 +1,5 @@
+{
+  // Prose wraps at 100 to match the repo's Biome lineWidth; code blocks and tables are
+  // exempt (their lines can't always be wrapped).
+  "MD013": { "line_length": 100, "code_blocks": false, "tables": false }
+}
