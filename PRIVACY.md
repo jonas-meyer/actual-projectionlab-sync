@@ -1,4 +1,4 @@
-# Privacy Policy — Actual Budget → ProjectionLab Sync
+# Privacy Policy: Actual Budget → ProjectionLab Sync
 
 **Last updated:** 2026-05-31
 
