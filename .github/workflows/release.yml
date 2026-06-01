@@ -4,13 +4,14 @@ on:
   push:
     tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
-permissions:
-  contents: write
-
 jobs:
   release:
     name: Build and publish zips
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: ./.github/actions/setup
@@ -20,7 +21,37 @@ jobs:
           [ "$pkg" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME != package.json $pkg" >&2; exit 1; }
       - run: pnpm zip
       - run: pnpm zip:firefox
+      - uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+        with:
+          subject-path: .output/*.zip
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" .output/*.zip --generate-notes
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: chrome-zip
+          path: .output/*-chrome.zip
+          if-no-files-found: error
+
+  publish-chrome:
+    name: Publish to Chrome Web Store
+    needs: release
+    if: ${{ github.repository == 'jonas-meyer/actual-projectionlab-sync' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+      CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+      CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+      CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: chrome-zip
+          path: .output
+      - name: Submit to Chrome Web Store
+        run: pnpm exec wxt submit --chrome-zip .output/*-chrome.zip
