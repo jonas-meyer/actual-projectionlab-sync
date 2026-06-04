@@ -4,6 +4,9 @@ A Chrome + Firefox extension that syncs account balances from a self-hosted
 [Actual Budget](https://actualbudget.org/) instance into
 [ProjectionLab](https://projectionlab.com/) via its Plugin API.
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/ejjcchainadahjmdoglfjnlbdgjoimcm?label=Chrome%20Web%20Store&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/ejjcchainadahjmdoglfjnlbdgjoimcm)
+[![Firefox Add-ons](https://img.shields.io/amo/v/actual-projectionlab-sync?label=Firefox%20Add-ons&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/firefox/addon/actual-projectionlab-sync/)
+
 ## How it works
 
 Actual has no browser-callable API, so a small server-side bridge
