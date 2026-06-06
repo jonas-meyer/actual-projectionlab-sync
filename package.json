@@ -27,6 +27,6 @@
     "wxt": "^0.20.26"
   },
   "dependencies": {
-    "@webext-core/messaging": "^3.0.1"
+    "@webext-core/messaging": "^3.0.2"
   }
 }
