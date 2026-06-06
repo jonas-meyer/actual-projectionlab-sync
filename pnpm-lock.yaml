@@ -16,8 +16,8 @@ importers:
         specifier: ^2.4.16
         version: 2.4.16
       '@webext-core/fake-browser':
-        specifier: ^1.5.1
-        version: 1.5.1
+        specifier: ^1.5.2
+        version: 1.5.2
       '@wxt-dev/auto-icons':
         specifier: ^1.1.1
         version: 1.1.1(wxt@0.20.26(@types/node@25.9.1)(jiti@2.7.0)(rolldown@1.0.2))
@@ -627,8 +627,8 @@ packages:
   '@types/node@25.9.1':
     resolution: {integrity: sha512-xfrlY7UD5rMJk3ZVJP8BNzS28J36YJg+xp+LPXV1TdWxr8uMH5A860QNxYDGQe/ylDSgjxE52Q9VnO7p75tJxg==}
 
-  '@types/webextension-polyfill@0.10.7':
-    resolution: {integrity: sha512-10ql7A0qzBmFB+F+qAke/nP1PIonS0TXZAOMVOxEUsm+lGSW6uwVcISFNa0I4Oyj0884TZVWGGMIWeXOVSNFHw==}
+  '@types/webextension-polyfill@0.12.5':
+    resolution: {integrity: sha512-uKSAv6LgcVdINmxXMKBuVIcg/2m5JZugoZO8x20g7j2bXJkPIl/lVGQcDlbV+aXAiTyXT2RA5U5mI4IGCDMQeg==}
 
   '@vitest/expect@4.1.7':
     resolution: {integrity: sha512-1R+tw0ortHEbZDGMymm+pN7/AFQ/RkFFdtd7EN+VBpynKmLbP8A3rpEXdshBJ7+8hQ9zBJh/i1s0yKNtxAnU7w==}
@@ -659,8 +659,8 @@ packages:
   '@vitest/utils@4.1.7':
     resolution: {integrity: sha512-T532WBu791cBxJlCl6SO+J14l81DQx6uQHm1bQbmCDY7nqlEIgkza/UFnSBNaUtSf41unldDFjdOBYEQC4b5Hw==}
 
-  '@webext-core/fake-browser@1.5.1':
-    resolution: {integrity: sha512-E+zd0viM8eSRmf8nLrk4bRjngHK/05+F0FaifIDVWcPRKGoxcWjA3El3RrX67bGAGf0RwIUgDjjBoXptgC8+3Q==}
+  '@webext-core/fake-browser@1.5.2':
+    resolution: {integrity: sha512-nkDQwOJ23X5Q7cEtN6LRuBtVFf1KVOFi5GoQAro0lzqdh59F5E+K350j1isbnqYbzsXRh1NJtboudIcHfZtvOQ==}
 
   '@webext-core/isolated-element@1.1.5':
     resolution: {integrity: sha512-4m6oP8Vzm/68YO1QmkUOZqqUcmyBtA53tji2g00/nYXE3E3IceYgeub7eIqvXDV2Z7xU6cm6qO1IMt4XFVwtvQ==}
@@ -2435,7 +2435,7 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
-  '@types/webextension-polyfill@0.10.7': {}
+  '@types/webextension-polyfill@0.12.5': {}
 
   '@vitest/expect@4.1.7':
     dependencies:
@@ -2478,9 +2478,9 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@webext-core/fake-browser@1.5.1':
+  '@webext-core/fake-browser@1.5.2':
     dependencies:
-      '@types/webextension-polyfill': 0.10.7
+      '@types/webextension-polyfill': 0.12.5
       lodash.merge: 4.6.2
 
   '@webext-core/isolated-element@1.1.5':
@@ -3783,7 +3783,7 @@ snapshots:
     dependencies:
       '@1natsu/wait-element': 4.2.0
       '@aklinker1/rollup-plugin-visualizer': 5.12.0
-      '@webext-core/fake-browser': 1.5.1
+      '@webext-core/fake-browser': 1.5.2
       '@webext-core/isolated-element': 1.1.5
       '@webext-core/match-patterns': 1.0.3
       '@wxt-dev/browser': 0.1.42
