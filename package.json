@@ -19,7 +19,7 @@
     "postinstall": "wxt prepare"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
+    "@biomejs/biome": "^2.5.0",
     "@webext-core/fake-browser": "^1.5.1",
     "@wxt-dev/auto-icons": "^1.1.1",
     "typescript": "^6.0.3",
