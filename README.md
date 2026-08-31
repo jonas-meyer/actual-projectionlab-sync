@@ -50,6 +50,19 @@ pnpm dev        # Chrome, hot-reload (Firefox: load .output/firefox-mv3 via abou
 pnpm build      # package for the stores (build:firefox for the Firefox MV3 build)
 ```
 
+## Release
+
+Releases are tag-driven. Bump `version` in `package.json`, commit, then tag it:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+The tag runs [`release.yml`](./.github/workflows/release.yml): it rejects a tag that disagrees
+with `package.json`, builds both zips, attests their provenance, creates the GitHub Release,
+and submits to both stores. Neither store accepts a version it already lists, so the version
+bump is what makes a release possible; the tag only triggers it.
+
 ## Disclaimer
 
 Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by Actual

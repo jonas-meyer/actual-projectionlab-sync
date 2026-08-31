@@ -33,6 +33,14 @@ jobs:
           name: chrome-zip
           path: .output/*-chrome.zip
           if-no-files-found: error
+      # AMO reviews bundled code against its sources, so both zips travel together.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: firefox-zip
+          path: |
+            .output/*-firefox.zip
+            .output/*-sources.zip
+          if-no-files-found: error
 
   publish-chrome:
     name: Publish to Chrome Web Store
@@ -55,3 +63,25 @@ jobs:
           path: .output
       - name: Submit to Chrome Web Store
         run: pnpm exec wxt submit --chrome-zip .output/*-chrome.zip
+
+  publish-firefox:
+    name: Publish to Firefox Add-ons
+    needs: release
+    if: ${{ github.repository == 'jonas-meyer/actual-projectionlab-sync' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Same value as browser_specific_settings.gecko.id in wxt.config.ts: public and permanent.
+      FIREFOX_EXTENSION_ID: actual-projectionlab-sync@jonasmeyerohle.dev
+      FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+      FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: firefox-zip
+          path: .output
+      - name: Submit to Firefox Add-ons
+        run: pnpm exec wxt submit --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip
