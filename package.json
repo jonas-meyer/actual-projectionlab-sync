@@ -24,7 +24,7 @@
     "@wxt-dev/auto-icons": "^1.1.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7",
-    "wxt": "^0.20.26"
+    "wxt": "^0.20.27"
   },
   "dependencies": {
     "@webext-core/messaging": "^3.0.1"
