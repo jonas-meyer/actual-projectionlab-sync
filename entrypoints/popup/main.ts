@@ -7,8 +7,7 @@ const backfillBtn = document.querySelector<HTMLButtonElement>('#backfill')!;
 
 const noResponse = 'No response from the extension. Reload it and retry.';
 
-document.querySelector<HTMLAnchorElement>('#open-options')!.addEventListener('click', (e) => {
-  e.preventDefault();
+document.querySelector<HTMLButtonElement>('#open-options')!.addEventListener('click', () => {
   browser.runtime.openOptionsPage();
 });
 
